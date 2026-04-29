@@ -41,29 +41,37 @@ wire [5:0] count = (mode == 1'b1) ? timerout  : stopwatchout;
 /******** UPDATE THIS SECTION ********/
 /******* INITIALIZE STOPWATCH AND TIMER MODULE ***********/
 // Control signals
-wire mode   = sw[0];        // 0 = stopwatch, 1= timer
-wire run    = sw[1];        // 0 = pause (circuit holds it state), 1 = run (counter increments/decrements)
-wire load   = sw[2];        // 1 = load value from load_value into timer counter, 0 = do nothing
-wire [5:0] load_value = sw[15:10];      //Set Timer Value (Value to load in timer)
+assign btnC_1Hz = btnC;
+wire mode       = sw[0];           // 0 = stopwatch, 1 = timer
+wire run        = sw[1];           // 0 = pause, 1 = run
+wire load       = sw[2];           // 1 = load value
+wire [5:0] load_val_sw = sw[15:10]; // Set Timer Value
 
 wire [5:0] timerout;
 wire [5:0] stopwatchout;
 
 
+wire [5:0] count = (mode == 1'b1) ? timerout : stopwatchout;
 
+// Timer Module Instance (Counts Down)
+timer tm (
+    .clk(clk_1Hz), 
+    .rst(btnC_1Hz), 
+    .en(run & mode),       // Only count when in Timer mode
+    .load(load), 
+    .load_value(load_val_sw), 
+    .state(timerout)
+);
 
-//Stopwatch Module Instance
-//Use "clk_1Hz" as clock signal to stopwatch and timer modules
-timer tm(.clk(clk_1Hz), .rst(btnC_1Hz), .en(run), .load(load), .load_value(load_value), .state(timerout));
+// Stopwatch Module Instance (Counts Up)
+stopwatch stw (
+    .clk(clk_1Hz), 
+    .rst(btnC_1Hz), 
+    .en(run & ~mode),      // Only count when in Stopwatch mode
+    .state(stopwatchout)
+);
 
-//Timer Module Instance
-//Use "clk_1Hz" as clock signal to stopwatch and timer modules
-stopwatch stw(.clk(clk_1Hz), .rst(btnC_1Hz), .en(run), .state(stopwatchout));
-
-assign led[3] = stopwatchout[0];
-assign led[4] = stopwatchout[1];
-assign led[5] = stopwatchout[2];
-assign led[6] = stopwatchout[3];
-assign led[7] = stopwatchout[4];
-assign led[8] = stopwatchout[5];
-endmodule
+// LED Visual Feedback
+assign led[5:0] = count;     // Show current active count on first 6 LEDs
+assign led[15]  = mode;      // High LED indicates Timer Mode
+P
