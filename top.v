@@ -72,6 +72,9 @@ stopwatch stw (
 );
 
 // LED Visual Feedback
-assign led[5:0] = count;     // Show current active count on first 6 LEDs
-assign led[15]  = mode;      // High LED indicates Timer Mode
-P
+//assign led[5:0] = count;     // Show current active count on first 6 LEDs
+//assign led[15]  = mode;      // High LED indicates Timer Mode
+assign led[8:3] = stopwatchout[5:0]; //to match table in project handout
+assign led[15:10] = timerout[5:0];
+
+endmodule
